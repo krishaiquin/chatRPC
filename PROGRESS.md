@@ -1,3 +1,3 @@
 ### Week 1
-    ✅ set up transport protocol (UDP)
-    ✅ Echo messages using RPC 
+    ✅ Set up simple transport class (implements UDP)
+    ✅ Echo messages using RPC
