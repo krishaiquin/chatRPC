@@ -58,7 +58,7 @@ func Listen() {
 
 }
 
-func LocalAddr() string {
+func GetAddress() string {
 	return conn.LocalAddr().String()
 }
 
