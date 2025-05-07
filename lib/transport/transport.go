@@ -6,6 +6,7 @@ import (
 	"net"
 )
 
+// call to request
 func Call(to string, funcName string, args []byte) []byte {
 	//create UDP endpoint from string address
 	toAddr, err := net.ResolveUDPAddr("udp", to)
@@ -31,6 +32,7 @@ func Call(to string, funcName string, args []byte) []byte {
 
 }
 
+// listen for request
 func Listen() {
 	for {
 		//make buffer for requests
@@ -60,6 +62,15 @@ func Listen() {
 
 func GetAddress() string {
 	return conn.LocalAddr().String()
+}
+
+func init() {
+	addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:0")
+	if err != nil {
+		panic(err)
+	}
+	//create the UDPConn
+	conn, err = net.ListenUDP("udp", addr)
 }
 
 var conn *net.UDPConn
