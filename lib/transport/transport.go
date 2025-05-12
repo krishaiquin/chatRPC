@@ -1,7 +1,7 @@
 package transport
 
 import (
-	message "chatRPC/message/rpc/serverStub"
+	nodeset "chatRPC/nodeset/rpc/serverStub"
 	"fmt"
 	"net"
 )
@@ -19,7 +19,7 @@ func Call(to string, funcName string, args []byte) []byte {
 		panic(err)
 	}
 	if n != len(args) {
-		panic(fmt.Errorf("Truncated send. Sent: %d, original: %d", n, len(args)))
+		panic(fmt.Errorf("truncated send. Sent: %d, original: %d", n, len(args)))
 	}
 	//make buffer for the response
 	buf := make([]byte, 2048)
@@ -44,13 +44,11 @@ func Listen() {
 		args := buf[:n]
 
 		//----can be modularized---
-		//Dispath to server
-		fmt.Println("Received Request!")
-		//call the serverStub
-		response := message.Echo(args)
+		//Dispatch to the function name
+		response := nodeset.Add(args)
 		//--------------------
 
-		//write the response to the connection
+		// //write the response to the connection
 		_, err = conn.WriteToUDP(response, from)
 		if err != nil {
 			panic(err)
@@ -71,6 +69,9 @@ func init() {
 	}
 	//create the UDPConn
 	conn, err = net.ListenUDP("udp", addr)
+	if err != nil {
+		panic(err)
+	}
 }
 
 var conn *net.UDPConn

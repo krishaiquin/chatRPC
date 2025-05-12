@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	fmt.Printf("Listening on: %s\n", transport.GetAddress())
 	transport.Listen()
 }
