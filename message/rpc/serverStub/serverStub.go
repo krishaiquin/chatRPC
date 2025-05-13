@@ -1,11 +1,16 @@
 package serverStub
 
 import (
+	"chatRPC/lib/transport"
 	"chatRPC/message"
 	"encoding/json"
 )
 
-func Echo(args []byte) []byte {
+func Register() {
+	transport.RegisterServerStub("Send", Send)
+}
+
+func Send(args []byte) []byte {
 	//unmarshal
 	var msg string
 	err := json.Unmarshal(args, &msg)
@@ -13,7 +18,7 @@ func Echo(args []byte) []byte {
 		panic(err)
 	}
 	//call the procedure
-	res := message.Echo(msg)
+	res := message.Send(msg)
 	//marshall
 	data, err := json.Marshal(res)
 	if err != nil {
