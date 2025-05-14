@@ -18,12 +18,7 @@ func Add(addr []byte) []byte {
 		panic(err)
 	}
 	//call the procedure
-	res := nodeset.Add(address)
-	//marshall
-	data, err := json.Marshal(res)
-	if err != nil {
-		panic(err)
-	}
+	nodeset.Add(address)
 
-	return data
+	return nil
 }
