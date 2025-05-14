@@ -5,7 +5,7 @@
     ✅ Expand transport layer to work on multiple functions
     ✅ Figure out how to create set of client nodes
     ✅ Add daemon for message service
-    [->] Set up a db to save the endpoints for different services
+    ✅ Set up a db to save the endpoints for different services
     [ ] Broadcast messages to the client nodeset. No ordering yet
     [ ] Refactor RPC
     [ ] Add quit command to chat
