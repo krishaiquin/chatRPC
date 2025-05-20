@@ -8,6 +8,7 @@ import (
 
 func Register() {
 	transport.RegisterServerStub("Add", Add)
+	transport.RegisterServerStub("GetNodes", GetNodes)
 }
 
 func Add(addr []byte) []byte {
@@ -21,4 +22,16 @@ func Add(addr []byte) []byte {
 	nodeset.Add(address)
 
 	return nil
+}
+
+func GetNodes(args []byte) []byte {
+
+	cluster := nodeset.GetNodes()
+	//marshal
+	reply, err := json.Marshal(cluster)
+	if err != nil {
+		panic(err)
+	}
+
+	return reply
 }

@@ -15,7 +15,7 @@ func Call(to string, funcName string, args []byte) []byte {
 		panic(err)
 	}
 
-	buf := new(bytes.Buffer)
+	buf := bytes.NewBuffer(make([]byte, 0))
 	//write to buffer
 	err = binary.Write(buf, binary.NativeEndian, uint32(len(funcName)))
 	if err != nil {
@@ -30,11 +30,11 @@ func Call(to string, funcName string, args []byte) []byte {
 		panic(err)
 	}
 	//write buf to the desired address
-	n, err := conn.WriteToUDP(args, toAddr)
+	n, err := conn.WriteToUDP(buf.Bytes(), toAddr)
 	if err != nil {
 		panic(err)
 	}
-	if n != len(args) {
+	if n != len(buf.Bytes()) {
 		panic(fmt.Errorf("truncated send. Sent: %d, original: %d", n, len(args)))
 	}
 	//make buffer or the response
@@ -62,20 +62,18 @@ func Listen() {
 		buf := bytes.NewBuffer(request)
 		//extract data from buf
 		var funcLength uint32
-		var args []byte
 		err = binary.Read(buf, binary.NativeEndian, &funcLength)
+		funcName := make([]byte, funcLength)
 		if err != nil {
 			panic(err)
 		}
-		err = binary.Read(buf, binary.NativeEndian, &args)
+		err = binary.Read(buf, binary.NativeEndian, &funcName)
 		if err != nil {
 			panic(err)
 		}
-		funcName := args[:funcLength]
-		args = args[funcLength:]
 		serverStub := serverStubRegistry[string(funcName)]
 		//dispatch
-		response := serverStub(args)
+		response := serverStub(buf.Bytes())
 
 		//write the response to the connection
 		_, err = conn.WriteToUDP(response, from)

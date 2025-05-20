@@ -3,7 +3,6 @@ package main
 import (
 	db "chatRPC/db/RPC/clientStub"
 	"chatRPC/lib/transport"
-	"chatRPC/nodeset/RPC/clientStub"
 	"chatRPC/nodeset/RPC/serverStub"
 	"fmt"
 	"os"
@@ -19,7 +18,5 @@ func main() {
 	serverStub.Register()
 	fmt.Printf("Listening on: %s\n", transport.GetAddress())
 	db.Put("nodeset", transport.GetAddress())
-	//bind nodeset client to its server endpoint
-	clientStub.Bind()
 	transport.Listen()
 }

@@ -7,9 +7,9 @@ func Add(addr string) {
 	fmt.Printf("Nodes: %v\n", cluster)
 }
 
-// func GetNodes() string {
-// 	return fmt.Sprintf("Nodeset: %v\n", cluster)
-// }
+func GetNodes() []string {
+	return cluster
+}
 
 /**
 * Maybe add delete node when they exit from the nodeset

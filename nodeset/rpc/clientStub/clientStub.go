@@ -16,7 +16,21 @@ func Add(addr string) {
 		panic(err)
 	}
 	//send it to server
-	transport.Call(server, "add", data)
+	transport.Call(server, "Add", data)
+
+}
+
+func GetNodes() []string {
+
+	reply := transport.Call(server, "GetNodes", nil)
+	var res []string
+	//unmarshal
+	err := json.Unmarshal(reply, &res)
+	if err != nil {
+		panic(err)
+	}
+
+	return res
 
 }
 
