@@ -8,11 +8,26 @@
     ✅ Set up a db service to save the endpoints for different services 
 ### Week 3
     ✅ Fixed all bugs and connected chat to all services (message, nodeset and db)
-    [ ] Broadcast messages to the client nodeset. No ordering yet
-    [ ] Improve client nodeset to track them easily 
-    [ ] Add quit command to chat
+    [In Progress] Figure out how to broadcast messages
+    [ ] Rewrite transport layer to allow multicast/broadcast messaging
+    [In Progress] Rewrite client nodeset to access them easily
+        TODO:
+            -  create a Node struct
+            -  make Nodeset from []string into []Node
+    ✅ Add quit command to chat
     [ ] Refactor RPC
     [ ] Add context
     [ ] Test program's functionality   
-    [ ] Add vector clocks for causality
-    [ ] Test vector clocks (simulate real-life node connection) 
+    <!-- [ ] Add vector clocks for causality
+    [ ] Test vector clocks (simulate real-life node connection)  -->
+
+
+#### Learning Goals
+    - Implement RPC from scratch. Learn more about: 
+        - client stub
+        - server stub
+        - RPC mechanism
+    - Broadcast message to client node cluster. Learn more about:
+        - transport protocol
+    - Add context to the application. Learn more about:
+        - Contexts
