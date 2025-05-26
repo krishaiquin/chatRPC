@@ -28,7 +28,7 @@
 <!-- [ ] Test vector clocks (simulate real-life node connection)  -->
 
 
-#### Learning Goals
+<!-- #### Learning Goals
     - Implement RPC from scratch. Learn more about: 
         - client stub
         - server stub
@@ -37,3 +37,5 @@
         - transport protocol
     - Add context to the application. Learn more about:
         - Contexts
+    - Add vector clocks. Learn more about:
+        - causal events -->
