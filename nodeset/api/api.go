@@ -1,5 +1,10 @@
 package api
 
-type GetNodesReply struct {
-	NodesAddr []string
+type Node struct {
+	NodeId uint32
+	Addr   string
 }
+
+// type GetNodesReply struct {
+// 	NodesAddr []string
+// }

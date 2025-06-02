@@ -1,18 +1,33 @@
 package nodeset
 
-import "fmt"
+import (
+	nodesetManager "chatRPC/lib/nodesetManager/rpc/clientStub"
+	"chatRPC/nodeset/api"
+	"sync"
+)
 
-func Add(addr string) {
-	cluster = append(cluster, addr)
-	fmt.Printf("Nodes: %v\n", cluster)
+func Add(addr string) uint32 {
+	mx.Lock()
+	id := nextId
+	nextId += 1
+	cluster = append(cluster, api.Node{NodeId: id, Addr: addr})
+	mx.Unlock()
+	notify()
+
+	return id
 }
 
-func GetNodes() []string {
-	return cluster
+func notify() {
+	for _, n := range cluster {
+		nodesetManager.Update(n.Addr, cluster)
+	}
 }
 
-/**
-* Maybe add delete node when they exit from the nodeset
- */
+func init() {
+	nextId = 0
 
-var cluster = make([]string, 0, 1)
+}
+
+var nextId uint32
+var cluster []api.Node
+var mx sync.Mutex

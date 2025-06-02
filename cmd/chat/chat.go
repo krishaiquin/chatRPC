@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	db "chatRPC/db/rpc/clientStub"
-	"chatRPC/lib/transport"
+	"chatRPC/lib/nodesetManager"
 	message "chatRPC/message/rpc/clientStub"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
 	"fmt"
@@ -23,7 +23,7 @@ func main() {
 	message.Bind(db.Get("message"))
 
 	//add this node to the nodeset
-	nodeset.Add(transport.GetAddress())
+	nodesetManager.CreateCluster()
 
 	//while loop here
 	for {

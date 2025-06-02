@@ -9,29 +9,24 @@ func Bind(addr string) {
 	server = addr
 }
 
-func Add(addr string) {
-	//marshal
+func Add(addr string) uint32 {
+	//marshal addr
 	data, err := json.Marshal(addr)
 	if err != nil {
 		panic(err)
 	}
-	//send it to server
-	transport.Call(server, "Add", data)
 
-}
+	//send it to nodeset server
+	response := transport.Call(server, "Add", data)
 
-func GetNodes() []string {
-
-	reply := transport.Call(server, "GetNodes", nil)
-	var res []string
-	//unmarshal
-	err := json.Unmarshal(reply, &res)
+	//unmarshal response
+	var nodeId uint32
+	err = json.Unmarshal(response, &nodeId)
 	if err != nil {
 		panic(err)
 	}
 
-	return res
-
+	return nodeId
 }
 
 var server string
