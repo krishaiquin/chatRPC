@@ -14,7 +14,7 @@ import (
 func main() {
 
 	if len(os.Args) != 2 {
-		panic(fmt.Errorf("usage %s <DBServerAddr> <message>", os.Args[0]))
+		panic(fmt.Errorf("usage %s <DBServerAddr>", os.Args[0]))
 	}
 
 	//bind chat to all the services endpoints

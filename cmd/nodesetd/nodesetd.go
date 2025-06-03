@@ -1,9 +1,9 @@
 package main
 
 import (
-	db "chatRPC/db/RPC/clientStub"
+	db "chatRPC/db/rpc/clientStub"
 	"chatRPC/lib/transport"
-	"chatRPC/nodeset/RPC/serverStub"
+	"chatRPC/nodeset/rpc/serverStub"
 	"fmt"
 	"os"
 )

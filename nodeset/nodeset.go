@@ -3,6 +3,7 @@ package nodeset
 import (
 	nodesetManager "chatRPC/lib/nodesetManager/rpc/clientStub"
 	"chatRPC/nodeset/api"
+	"fmt"
 	"sync"
 )
 
@@ -12,6 +13,7 @@ func Add(addr string) uint32 {
 	nextId += 1
 	cluster = append(cluster, api.Node{NodeId: id, Addr: addr})
 	mx.Unlock()
+	fmt.Printf("Cluster: %v\n", cluster)
 	notify()
 
 	return id
