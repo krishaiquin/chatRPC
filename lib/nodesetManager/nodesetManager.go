@@ -23,12 +23,15 @@ func CreateCluster() {
 // calls by nodeset services
 func Update(nodeset []api.Node) {
 	cluster.mx.Lock()
-	cluster.NodeSet = nodeset
+	cluster.NodeSet = make([]api.Node, len(nodeset))
+	copy(cluster.NodeSet, nodeset)
 	cluster.mx.Unlock()
+
 }
 
 func init() {
 	cluster = &Cluster{}
+
 }
 
 var cluster *Cluster

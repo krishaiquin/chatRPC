@@ -4,6 +4,8 @@ import (
 	"bufio"
 	db "chatRPC/db/rpc/clientStub"
 	"chatRPC/lib/nodesetManager"
+	serverStub "chatRPC/lib/nodesetManager/rpc/serverStub"
+	"chatRPC/lib/transport"
 	message "chatRPC/message/rpc/clientStub"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
 	"fmt"
@@ -22,7 +24,12 @@ func main() {
 	nodeset.Bind(db.Get("nodeset"))
 	message.Bind(db.Get("message"))
 
+	//chatd stuff
+	serverStub.Register()
+	go transport.Listen()
+
 	//add this node to the nodeset
+	log.Printf("My address is %s\n", transport.GetAddress())
 	nodesetManager.CreateCluster()
 
 	//while loop here
