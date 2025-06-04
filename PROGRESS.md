@@ -28,7 +28,8 @@
 
 ### Week 5
     ✅ Rewrite Nodeset Architecture
-    [ ] Test Nodeset Architecture
+    🚧 Test Nodeset Architecture
+    [ ] Figure out what's wrong when nodeset sends a request to client nodes 
 <!-- [ ] Refactor RPC -->
 <!-- [ ] Add context -->
 <!-- [ ] Test program's functionality    -->
