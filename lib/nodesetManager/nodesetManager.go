@@ -4,6 +4,7 @@ import (
 	"chatRPC/lib/transport"
 	"chatRPC/nodeset/api"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
+	"log"
 	"sync"
 )
 
@@ -22,10 +23,11 @@ func CreateCluster() {
 
 // calls by nodeset services
 func Update(nodeset []api.Node) {
-	cluster.mx.Lock()
-	cluster.NodeSet = make([]api.Node, len(nodeset))
-	copy(cluster.NodeSet, nodeset)
-	cluster.mx.Unlock()
+	log.Println("updating my local copy of cluster")
+	// cluster.mx.Lock()
+	// cluster.NodeSet = make([]api.Node, len(nodeset))
+	// copy(cluster.NodeSet, nodeset)
+	// cluster.mx.Unlock()
 
 }
 

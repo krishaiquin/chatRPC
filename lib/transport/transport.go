@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"net"
 )
 
@@ -30,6 +31,7 @@ func Call(to string, funcName string, args []byte) []byte {
 		panic(err)
 	}
 	//write buf to the desired address
+	log.Printf("Sending Request to [%s] - %s(%s)", to, funcName, args)
 	n, err := conn.WriteToUDP(buf.Bytes(), toAddr)
 	if err != nil {
 		panic(err)
@@ -43,6 +45,7 @@ func Call(to string, funcName string, args []byte) []byte {
 	if err != nil {
 		panic(err)
 	}
+
 	//return the buf with n-bytes read from UDP
 	return response[:n]
 
@@ -74,7 +77,7 @@ func Listen() {
 		serverStub := serverStubRegistry[string(funcName)]
 		//dispatch
 		response := serverStub(buf.Bytes())
-
+		log.Printf("Sending response to [%s] - %s", from.String(), response)
 		//write the response to the connection
 		_, err = conn.WriteToUDP(response, from)
 		if err != nil {

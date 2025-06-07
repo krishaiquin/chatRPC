@@ -3,6 +3,7 @@ package clientStub
 import (
 	"chatRPC/lib/transport"
 	"encoding/json"
+	"log"
 )
 
 func Bind(addr string) {
@@ -18,11 +19,12 @@ func Add(addr string) uint32 {
 
 	//send it to nodeset server
 	response := transport.Call(server, "Add", data)
-
+	log.Printf("Add ClientStub received response: %s", response)
 	//unmarshal response
 	var nodeId uint32
 	err = json.Unmarshal(response, &nodeId)
 	if err != nil {
+
 		panic(err)
 	}
 

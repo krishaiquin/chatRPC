@@ -18,7 +18,7 @@ func Update(destination string, cluster []api.Node) {
 	//send it to destination
 	response := transport.Call(destination, "Update", data)
 	if response != nil {
-		log.Fatal("Error occured: response is not nil")
+		log.Fatalf("Error occured: response is not nil.")
 	}
 
 }
