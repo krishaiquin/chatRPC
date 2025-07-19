@@ -31,9 +31,14 @@
     ✅ Test Nodeset Architecture - pt. 1
     ✅ Figure out what's wrong when nodeset sends a request to client nodes
 ### Week 6
-    [ ] Implement the potential solution describe in Notes / Design Insights Week 5 section
+    [X] Implement the potential solution describe in Notes / Design Insights Week 5 section
+    [X] Learn more about goroutines, select statements, sync.WaitGroup, channels
+    [X] Node discovery now works!
+### Week 7
+    [ ] Refactor Code
+    [ ] Add better error handling
+    [ ] Learn and add context
 <!-- [ ] Refactor RPC -->
-<!-- [ ] Add context -->
 <!-- [ ] Test program's functionality    -->
 <!-- [ ] Add vector clocks for causality -->
 <!-- [ ] Test vector clocks (simulate real-life node connection)  -->
@@ -58,10 +63,15 @@
         - Current Node Discovery Implementation:
             - Client nodes have their own local copy of cluster (list of nodes)
             - Nodeset service has its own copy of cluster but this cluster is the source of truth
-            - When a node enters a cluster - this node sends a request to nodeset service to it to the cluster
+            - When a node enters a cluster - this node sends a request to nodeset service to add it to the cluster
             - Nodeset, then, sends a request to all the nodes in the cluster to update their copy of cluster.
         - Problem: Since client nodes both sends and receive requests, they don't know if the received packet is a request or a response
         - Potential solution: Add request# and response# - if request# == response#, send that response to the appropriate request.
+    - Week 6
+        - The suggested solution mentioned in Week 5 worked. 
+        - In addition to that, I've put the Listen() in goroutine so that services and nodes are able to send requests and receive results at the same time. 
+        - In doing this, I am learning how to manage goroutines effectively, including working with channels, sync package, select statements.
+        - I think this is a good point to clean up the code - refactor, add more error handling and finally introducing context in the project --> main goal for next week
 <!-- #### Learning Goals
     - Implement RPC from scratch. Learn more about: 
         - client stub
