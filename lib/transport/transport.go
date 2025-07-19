@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"sync/atomic"
+	"time"
 )
 
 // call to request
@@ -18,20 +21,26 @@ func Call(to string, funcName string, args []byte) []byte {
 
 	buf := bytes.NewBuffer(make([]byte, 0))
 	//write to buffer
-	err = binary.Write(buf, binary.NativeEndian, uint32(len(funcName)))
-	if err != nil {
+	seqNum := seq.Add(1)
+	pendingRequest[seqNum] = make(chan []byte, 1)
+	if err = binary.Write(buf, binary.NativeEndian, seqNum); err != nil {
 		panic(err)
 	}
-	err = binary.Write(buf, binary.NativeEndian, []byte(funcName))
-	if err != nil {
+	if err = binary.Write(buf, binary.NativeEndian, request); err != nil {
 		panic(err)
 	}
-	err = binary.Write(buf, binary.NativeEndian, args)
-	if err != nil {
+	if err = binary.Write(buf, binary.NativeEndian, uint32(len(funcName))); err != nil {
 		panic(err)
 	}
-	//write buf to the desired address
-	log.Printf("Sending Request to [%s] - %s(%s)", to, funcName, args)
+	if err = binary.Write(buf, binary.NativeEndian, []byte(funcName)); err != nil {
+		panic(err)
+	}
+	if err = binary.Write(buf, binary.NativeEndian, args); err != nil {
+		panic(err)
+	}
+
+	//send request
+	log.Printf("Sending request#%d to  [%s] - %s(%s)", seqNum, to, funcName, args)
 	n, err := conn.WriteToUDP(buf.Bytes(), toAddr)
 	if err != nil {
 		panic(err)
@@ -39,49 +48,92 @@ func Call(to string, funcName string, args []byte) []byte {
 	if n != len(buf.Bytes()) {
 		panic(fmt.Errorf("truncated send. Sent: %d, original: %d", n, len(args)))
 	}
-	//make buffer or the response
-	response := make([]byte, 2048)
-	n, _, err = conn.ReadFromUDP(response)
-	if err != nil {
-		panic(err)
+
+	//start the timeout timer
+	timeout := make(chan bool)
+	go func() {
+		time.Sleep(responseTimeout)
+		timeout <- true
+	}()
+
+	//see which happens first: timeout or receiving the result
+	select {
+	case <-timeout:
+		log.Panicln("Request has timed out! Exiting...")
+	case res := <-pendingRequest[seqNum]:
+		log.Printf("Result for request#%d has been sent to the application\n", seqNum)
+		return res
 	}
 
-	//return the buf with n-bytes read from UDP
-	return response[:n]
+	return nil
 
 }
 
 // listen for request
 func Listen() {
+
 	for {
 		//make buffer for requests
-		request := make([]byte, 2048)
-		n, from, err := conn.ReadFromUDP(request)
+		res := make([]byte, 2048)
+		n, from, err := conn.ReadFromUDP(res)
 		if err != nil {
 			panic(err)
 		}
-		request = request[:n]
+		res = res[:n]
 		//put request to buf
-		buf := bytes.NewBuffer(request)
+		buf := bytes.NewBuffer(res)
 		//extract data from buf
-		var funcLength uint32
-		err = binary.Read(buf, binary.NativeEndian, &funcLength)
-		funcName := make([]byte, funcLength)
-		if err != nil {
+		var seqNum uint32
+		var packetType byte
+		if err = binary.Read(buf, binary.NativeEndian, &seqNum); err != nil {
 			panic(err)
 		}
-		err = binary.Read(buf, binary.NativeEndian, &funcName)
-		if err != nil {
+		if err = binary.Read(buf, binary.NativeEndian, &packetType); err != nil {
 			panic(err)
 		}
-		serverStub := serverStubRegistry[string(funcName)]
-		//dispatch
-		response := serverStub(buf.Bytes())
-		log.Printf("Sending response to [%s] - %s", from.String(), response)
-		//write the response to the connection
-		_, err = conn.WriteToUDP(response, from)
-		if err != nil {
-			panic(err)
+		switch packetType {
+		case request:
+			log.Printf("Received request#%d from %s\n", seqNum, from.String())
+			var funcLength uint32
+
+			err = binary.Read(buf, binary.NativeEndian, &funcLength)
+			funcName := make([]byte, funcLength)
+			if err != nil {
+				panic(err)
+			}
+			err = binary.Read(buf, binary.NativeEndian, &funcName)
+			if err != nil {
+				panic(err)
+			}
+			serverStub := serverStubRegistry[string(funcName)]
+			//dispatch
+			response := serverStub(buf.Bytes())
+
+			//make buffer
+			buffer := bytes.NewBuffer(make([]byte, 0))
+			if err = binary.Write(buffer, binary.NativeEndian, seqNum); err != nil {
+				panic(err)
+			}
+			if err = binary.Write(buffer, binary.NativeEndian, result); err != nil {
+				panic(err)
+			}
+			if err = binary.Write(buffer, binary.NativeEndian, response); err != nil {
+				panic(err)
+			}
+			log.Printf("Sending response to [%s] - %s", from.String(), response)
+			//write the response to the connection
+			_, err = conn.WriteToUDP(buffer.Bytes(), from)
+			if err != nil {
+				panic(err)
+			}
+
+		case result:
+			log.Printf("Received result for request#%d\n", seqNum)
+			data, err := io.ReadAll(buf)
+			if err != nil {
+				panic(err)
+			}
+			pendingRequest[seqNum] <- data
 		}
 
 	}
@@ -107,10 +159,20 @@ func init() {
 		panic(err)
 	}
 
-	//initialize function registry
+	//initialize
 	serverStubRegistry = make(map[string]func([]byte) []byte)
+	pendingRequest = make(map[uint32]chan []byte)
+	responseTimeout = 15 * time.Second
 
 }
 
 var conn *net.UDPConn
 var serverStubRegistry map[string]func([]byte) []byte
+var pendingRequest map[uint32]chan []byte
+var seq atomic.Uint32
+var responseTimeout time.Duration
+
+const (
+	request byte = iota
+	result
+)

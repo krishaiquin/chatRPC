@@ -6,6 +6,7 @@ import (
 	"chatRPC/nodeset/rpc/serverStub"
 	"fmt"
 	"os"
+	"sync"
 )
 
 func main() {
@@ -16,7 +17,15 @@ func main() {
 	db.Bind(os.Args[1])
 	//Register nodeset function
 	serverStub.Register()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		transport.Listen()
+	}()
 	fmt.Printf("Listening on: %s\n", transport.GetAddress())
 	db.Put("nodeset", transport.GetAddress())
-	transport.Listen()
+	//wait until goroutine is done
+	wg.Wait()
 }
+
+var wg sync.WaitGroup

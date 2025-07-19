@@ -14,7 +14,7 @@ func Add(addr string) uint32 {
 	cluster = append(cluster, api.Node{NodeId: id, Addr: addr})
 	mx.Unlock()
 	//fmt.Printf("Nodeset server cluster: %v\n", cluster)
-	notify()
+	go notify()
 
 	return id
 }
