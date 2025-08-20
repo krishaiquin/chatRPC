@@ -31,9 +31,9 @@
     ✅ Test Nodeset Architecture - pt. 1
     ✅ Figure out what's wrong when nodeset sends a request to client nodes
 ### Week 6
-    [X] Implement the potential solution describe in Notes / Design Insights Week 5 section
-    [X] Learn more about goroutines, select statements, sync.WaitGroup, channels
-    [X] Node discovery now works!
+    ✅ Implement the potential solution describe in Notes / Design Insights Week 5 section
+    ✅ Learn more about goroutines, select statements, sync.WaitGroup, channels
+    ✅ Node discovery now works!
 ### Week 7
     [ ] Refactor Code
     [ ] Add better error handling
@@ -69,7 +69,12 @@
         - Potential solution: Add request# and response# - if request# == response#, send that response to the appropriate request.
     - Week 6
         - The suggested solution mentioned in Week 5 worked. 
-        - In addition to that, I've put the Listen() in goroutine so that services and nodes are able to send requests and receive results at the same time. 
+        - More in-depth explanation:
+            - Each packet from a node has a sequence number and a flag whether it is a request or a result.
+            - The receiver node then unpacks the packet and process accordingly
+            - If the packet is a request, the transport class will dispatch it to the appropriate function to process it
+            - If the packet is a result, it will get sent to the application and remove the request from the list of pending requests with the associated seq#
+        - In addition to that, I've put Listen() in goroutine so that services and nodes are able to send requests and receive results at the same time. 
         - In doing this, I am learning how to manage goroutines effectively, including working with channels, sync package, select statements.
         - I think this is a good point to clean up the code - refactor, add more error handling and finally introducing context in the project --> main goal for next week
 <!-- #### Learning Goals
