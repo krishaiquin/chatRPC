@@ -1,10 +1,10 @@
 package nodesetManager
 
 import (
+	"chatRPC/dlog"
 	"chatRPC/lib/transport"
 	"chatRPC/nodeset/api"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
-	"log"
 	"sync"
 )
 
@@ -23,19 +23,23 @@ func CreateCluster() {
 
 // calls by nodeset services
 func Update(nodeset []api.Node) {
-	log.Println("updating my local copy of cluster")
+	dlog.Printf("updating my local copy of cluster")
 	cluster.mx.Lock()
 	cluster.NodeSet = make([]api.Node, len(nodeset))
 	copy(cluster.NodeSet, nodeset)
 	cluster.mx.Unlock()
-	log.Printf("Cluster: ")
+	dlog.Printf("Cluster: ")
 	for _, node := range cluster.NodeSet {
-		log.Printf("%s, ", node.Addr)
+		dlog.Printf("%s, ", node.Addr)
 	}
 }
 
 func GetId() uint32 {
 	return cluster.NodeId
+}
+
+func GetCluster() []api.Node {
+	return cluster.NodeSet
 }
 
 func init() {

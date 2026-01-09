@@ -1,19 +1,32 @@
 package main
 
 import (
+	"bufio"
 	db "chatRPC/db/rpc/clientStub"
+	"chatRPC/dlog"
+	message "chatRPC/lib/message/rpc/clientStub"
+	messenger "chatRPC/lib/message/rpc/serverStub"
 	"chatRPC/lib/nodesetManager"
-	serverStub "chatRPC/lib/nodesetManager/rpc/serverStub"
+	nodemanager "chatRPC/lib/nodesetManager/rpc/serverStub"
 	"chatRPC/lib/transport"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 )
+
+func send(msg string) {
+	my_id := nodesetManager.GetId()
+	for _, node := range nodesetManager.GetCluster() {
+		if node.NodeId == my_id {
+			continue
+		}
+		message.Send(node.Addr, my_id, msg)
+	}
+}
 
 func main() {
 
@@ -41,7 +54,7 @@ func main() {
 		}
 	}()
 	//add this node to the nodeset
-	log.Printf("My address is %s\n", transport.GetAddress())
+	dlog.Printf("My address is %s\n", transport.GetAddress())
 
 	//bind chat to all the services endpoints
 	db.Bind(os.Args[1])
@@ -54,32 +67,30 @@ func main() {
 	//message.Bind(db.Get("message"))
 
 	//chatd stuff
-	serverStub.Register()
+	nodemanager.Register()
+	messenger.Register()
 
 	nodesetManager.CreateCluster()
 
-	//while loop here
-	// for {
-	// 	fmt.Print("Type your message: ")
-	// 	reader := bufio.NewReader(os.Stdin)
-	// 	line, err := reader.ReadString('\n')
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	if line == "quit\n" || line == "q\n" {
-	// 		break
-	// 	}
+	fmt.Println("Welcome to chatRPC!")
 
-	// 	//send the message to the cluster
-	// 	msg := message.Send(line)
-	// 	fmt.Println(msg)
-	// }
+	for {
+		fmt.Print("Type your message: ")
+		reader := bufio.NewReader(os.Stdin)
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			panic(err)
+		}
+		if line == "quit\n" || line == "q\n" {
+			nodeset.Delete(nodesetManager.GetId())
+			cancel()
+			fmt.Printf("Bye!\n")
+			os.Exit(1)
+		}
+		send(line)
 
-	wg.Wait()
+	}
 
-	//call the clientStub
-	// msg := message.Send(os.Args[2])
-	// fmt.Println(msg)
 }
 
 var wg sync.WaitGroup

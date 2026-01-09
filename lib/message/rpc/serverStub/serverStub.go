@@ -1,8 +1,10 @@
 package serverStub
 
 import (
+	"chatRPC/dlog"
+	"chatRPC/lib/message"
+	"chatRPC/lib/message/api"
 	"chatRPC/lib/transport"
-	"chatRPC/message"
 	"encoding/json"
 )
 
@@ -12,18 +14,14 @@ func Register() {
 
 func Send(args []byte) []byte {
 	//unmarshal
-	var msg string
+	var msg api.SendArgs
 	err := json.Unmarshal(args, &msg)
 	if err != nil {
 		panic(err)
 	}
+	dlog.Printf("Received the message!\n")
 	//call the procedure
-	res := message.Send(msg)
-	//marshall
-	data, err := json.Marshal(res)
-	if err != nil {
-		panic(err)
-	}
+	message.Send(msg.From, msg.Message)
 
-	return data
+	return nil
 }

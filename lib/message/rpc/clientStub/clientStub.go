@@ -1,23 +1,23 @@
 package clientStub
 
 import (
+	"chatRPC/lib/message/api"
 	"chatRPC/lib/transport"
 	"encoding/json"
 )
 
-// bind communication line to serverAddress
-func Bind(addr string) {
-	server = addr
-}
-
-func Send(message string) string {
+func Send(to string, from uint32, message string) string {
+	args := api.SendArgs{
+		From:    from,
+		Message: message,
+	}
 	//marshal
-	data, err := json.Marshal(message)
+	data, err := json.Marshal(args)
 	if err != nil {
 		panic(err)
 	}
 	//send it to server and get a response
-	msg := transport.Call(server, "Send", data)
+	msg := transport.Call(to, "Send", data)
 	var response string
 	//unmarshal
 	err = json.Unmarshal(msg, &response)
@@ -28,5 +28,3 @@ func Send(message string) string {
 	return response
 
 }
-
-var server string

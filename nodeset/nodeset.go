@@ -1,9 +1,9 @@
 package nodeset
 
 import (
+	"chatRPC/dlog"
 	nodesetManager "chatRPC/lib/nodesetManager/rpc/clientStub"
 	"chatRPC/nodeset/api"
-	"log"
 	"slices"
 	"sync"
 )
@@ -40,7 +40,7 @@ func notify() {
 
 	for _, n := range cluster {
 		nodesetManager.Update(n.Addr, cluster)
-		log.Printf("node %d - %s updated!", n.NodeId, n.Addr)
+		dlog.Printf("node %d - %s updated!", n.NodeId, n.Addr)
 	}
 
 }

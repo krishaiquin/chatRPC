@@ -35,9 +35,10 @@
     ✅ Learn more about goroutines, select statements, sync.WaitGroup, channels
     ✅ Node discovery now works!
 ### Week 7
-    [ ] Refactor Code
-    [ ] Add better error handling
-    [ ] Learn and add context
+    🔁 Refactor Code
+    🔁 Add better error handling
+    ✅ Learn and add context (graceful shutdown and cleanup)
+    🚧 Add chat messaging
 <!-- [ ] Refactor RPC -->
 <!-- [ ] Test program's functionality    -->
 <!-- [ ] Add vector clocks for causality -->

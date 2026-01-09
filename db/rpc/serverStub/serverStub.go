@@ -38,5 +38,4 @@ func Get(data []byte) []byte {
 	}
 
 	return res
-
 }

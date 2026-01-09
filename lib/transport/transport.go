@@ -2,10 +2,10 @@ package transport
 
 import (
 	"bytes"
+	"chatRPC/dlog"
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"sync/atomic"
 	"time"
@@ -40,7 +40,7 @@ func Call(to string, funcName string, args []byte) []byte {
 	}
 
 	//send request
-	log.Printf("Sending request#%d to  [%s] - %s(%s)", seqNum, to, funcName, args)
+	dlog.Printf("Sending request#%d to  [%s] - %s(%s)", seqNum, to, funcName, args)
 	n, err := conn.WriteToUDP(buf.Bytes(), toAddr)
 	if err != nil {
 		panic(err)
@@ -59,9 +59,9 @@ func Call(to string, funcName string, args []byte) []byte {
 	//see which happens first: timeout or receiving the result
 	select {
 	case <-timeout:
-		log.Panicln("Request has timed out! Exiting...")
+		dlog.Printf("Request has timed out! Exiting...")
 	case res := <-pendingRequest[seqNum]:
-		log.Printf("Result for request#%d has been sent to the application\n", seqNum)
+		dlog.Printf("Result for request#%d has been sent to the application\n", seqNum)
 		return res
 	}
 
@@ -93,7 +93,7 @@ func Listen() {
 		}
 		switch packetType {
 		case request:
-			log.Printf("Received request#%d from %s\n", seqNum, from.String())
+			dlog.Printf("Received request#%d from %s\n", seqNum, from.String())
 			var funcLength uint32
 
 			err = binary.Read(buf, binary.NativeEndian, &funcLength)
@@ -105,6 +105,7 @@ func Listen() {
 			if err != nil {
 				panic(err)
 			}
+			dlog.Printf("function name is: %s\n", funcName)
 			serverStub := serverStubRegistry[string(funcName)]
 			//dispatch
 			response := serverStub(buf.Bytes())
@@ -120,7 +121,7 @@ func Listen() {
 			if err = binary.Write(buffer, binary.NativeEndian, response); err != nil {
 				panic(err)
 			}
-			log.Printf("Sending response to [%s] - %s", from.String(), response)
+			dlog.Printf("Sending response to [%s] - %s", from.String(), response)
 			//write the response to the connection
 			_, err = conn.WriteToUDP(buffer.Bytes(), from)
 			if err != nil {
@@ -128,7 +129,7 @@ func Listen() {
 			}
 
 		case result:
-			log.Printf("Received result for request#%d\n", seqNum)
+			dlog.Printf("Received result for request#%d\n", seqNum)
 			data, err := io.ReadAll(buf)
 			if err != nil {
 				panic(err)
