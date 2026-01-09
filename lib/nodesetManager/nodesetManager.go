@@ -24,11 +24,18 @@ func CreateCluster() {
 // calls by nodeset services
 func Update(nodeset []api.Node) {
 	log.Println("updating my local copy of cluster")
-	// cluster.mx.Lock()
-	// cluster.NodeSet = make([]api.Node, len(nodeset))
-	// copy(cluster.NodeSet, nodeset)
-	// cluster.mx.Unlock()
+	cluster.mx.Lock()
+	cluster.NodeSet = make([]api.Node, len(nodeset))
+	copy(cluster.NodeSet, nodeset)
+	cluster.mx.Unlock()
+	log.Printf("Cluster: ")
+	for _, node := range cluster.NodeSet {
+		log.Printf("%s, ", node.Addr)
+	}
+}
 
+func GetId() uint32 {
+	return cluster.NodeId
 }
 
 func init() {

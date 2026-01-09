@@ -8,6 +8,7 @@ import (
 
 func Register() {
 	transport.RegisterServerStub("Add", Add)
+	transport.RegisterServerStub("Delete", Delete)
 }
 
 func Add(args []byte) []byte {
@@ -27,4 +28,17 @@ func Add(args []byte) []byte {
 	}
 
 	return data
+}
+
+func Delete(args []byte) []byte {
+	var nodeId uint32
+	err := json.Unmarshal(args, &nodeId)
+	if err != nil {
+		panic(err)
+	}
+
+	nodeset.Delete(nodeId)
+
+	return nil
+
 }

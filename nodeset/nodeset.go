@@ -4,6 +4,7 @@ import (
 	nodesetManager "chatRPC/lib/nodesetManager/rpc/clientStub"
 	"chatRPC/nodeset/api"
 	"log"
+	"slices"
 	"sync"
 )
 
@@ -13,10 +14,26 @@ func Add(addr string) uint32 {
 	nextId += 1
 	cluster = append(cluster, api.Node{NodeId: id, Addr: addr})
 	mx.Unlock()
+	//send ack to requester
+
+	//notify all nodes in cluster
 	//fmt.Printf("Nodeset server cluster: %v\n", cluster)
 	go notify()
 
 	return id
+}
+
+func Delete(nodeId uint32) {
+	for index, n := range cluster {
+		if nodeId == n.NodeId {
+			mx.Lock()
+			cluster = slices.Delete(cluster, index, index+1)
+			mx.Unlock()
+			break
+		}
+	}
+	go notify()
+
 }
 
 func notify() {
@@ -30,7 +47,6 @@ func notify() {
 
 func init() {
 	nextId = 0
-
 }
 
 var nextId uint32

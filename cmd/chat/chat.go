@@ -6,10 +6,13 @@ import (
 	serverStub "chatRPC/lib/nodesetManager/rpc/serverStub"
 	"chatRPC/lib/transport"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 )
 
 func main() {
@@ -17,6 +20,26 @@ func main() {
 	if len(os.Args) != 2 {
 		panic(fmt.Errorf("usage %s <DBServerAddr>", os.Args[0]))
 	}
+	ctx, cancel := context.WithCancel(context.Background())
+
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
+
+	defer func() {
+		signal.Stop(signalCh)
+		cancel()
+	}()
+
+	go func() {
+		select {
+		case <-signalCh:
+			nodeset.Delete(nodesetManager.GetId())
+			cancel()
+			fmt.Printf("Cancellation Recieved! Exiting...\n")
+			os.Exit(1)
+		case <-ctx.Done():
+		}
+	}()
 	//add this node to the nodeset
 	log.Printf("My address is %s\n", transport.GetAddress())
 

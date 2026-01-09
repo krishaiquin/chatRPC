@@ -31,4 +31,14 @@ func Add(addr string) uint32 {
 	return nodeId
 }
 
+func Delete(nodeId uint32) {
+	args, err := json.Marshal(nodeId)
+	if err != nil {
+		panic(err)
+	}
+
+	response := transport.Call(server, "Delete", args)
+	log.Printf("Delete ClientStub received response: %s", response)
+}
+
 var server string
