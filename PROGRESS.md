@@ -39,10 +39,7 @@
     🔁 Add better error handling
     ✅ Learn and add context (graceful shutdown and cleanup)
     🚧 Add chat messaging
-<!-- [ ] Refactor RPC -->
-<!-- [ ] Test program's functionality    -->
-<!-- [ ] Add vector clocks for causality -->
-<!-- [ ] Test vector clocks (simulate real-life node connection)  -->
+
 
 ### 💭 Notes / Design Insights
     - Week 4:
