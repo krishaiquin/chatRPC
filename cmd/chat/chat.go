@@ -65,7 +65,6 @@ func main() {
 	}()
 	nodeset.Bind(db.Get("nodeset"))
 	//message.Bind(db.Get("message"))
-
 	//chatd stuff
 	nodemanager.Register()
 	messenger.Register()
@@ -75,7 +74,6 @@ func main() {
 	fmt.Println("Welcome to chatRPC!")
 
 	for {
-		fmt.Print("Type your message: ")
 		reader := bufio.NewReader(os.Stdin)
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -87,10 +85,10 @@ func main() {
 			fmt.Printf("Bye!\n")
 			os.Exit(1)
 		}
+		dlog.Printf("Sending line: %s\n", line)
 		send(line)
 
 	}
-
 }
 
 var wg sync.WaitGroup
