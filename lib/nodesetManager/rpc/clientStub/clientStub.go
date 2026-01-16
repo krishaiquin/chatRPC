@@ -4,21 +4,24 @@ import (
 	"chatRPC/lib/transport"
 	"chatRPC/nodeset/api"
 	"encoding/json"
-	"log"
 )
 
-func Update(destination string, cluster []api.Node) {
+func AddMember(destination string, node api.Node) {
 
-	//marshal the args
-	data, err := json.Marshal(cluster)
+	data, err := json.Marshal(node)
 	if err != nil {
 		panic(err)
 	}
 
-	//send it to destination
-	response := transport.Call(destination, "Update", data)
-	if len(response) != 0 {
-		log.Panicf("Error occured: response is not empty. Received %v\n", response)
+	transport.Call(destination, "AddMember", data)
+}
+
+func RemoveMember(destination string, nodeId uint32) {
+
+	data, err := json.Marshal(nodeId)
+	if err != nil {
+		panic(err)
 	}
 
+	transport.Call(destination, "RemoveMember", data)
 }

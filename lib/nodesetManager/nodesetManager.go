@@ -1,10 +1,10 @@
 package nodesetManager
 
 import (
-	"chatRPC/dlog"
 	"chatRPC/lib/transport"
 	"chatRPC/nodeset/api"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
+	"slices"
 	"sync"
 )
 
@@ -14,28 +14,41 @@ type Cluster struct {
 	mx      sync.Mutex
 }
 
-// Only called by client nodes
-func CreateCluster() {
+func CreateCluster(username string) {
 	cluster.mx.Lock()
-	cluster.NodeId = nodeset.Add(transport.GetAddress())
+	cluster.NodeId, cluster.NodeSet = nodeset.Add(transport.GetAddress(), username)
 	cluster.mx.Unlock()
 }
 
-// calls by nodeset services
-func Update(nodeset []api.Node) {
-	dlog.Printf("updating my local copy of cluster")
+func AddMember(node api.Node) {
 	cluster.mx.Lock()
-	cluster.NodeSet = make([]api.Node, len(nodeset))
-	copy(cluster.NodeSet, nodeset)
+	cluster.NodeSet = append(cluster.NodeSet, node)
 	cluster.mx.Unlock()
-	dlog.Printf("Cluster: ")
-	for _, node := range cluster.NodeSet {
-		dlog.Printf("%s, ", node.Addr)
+}
+
+func RemoveMember(nodeId uint32) {
+	for index, n := range cluster.NodeSet {
+		if nodeId == n.NodeId {
+			cluster.mx.Lock()
+			cluster.NodeSet = slices.Delete(cluster.NodeSet, index, index+1)
+			cluster.mx.Unlock()
+			break
+		}
 	}
 }
 
 func GetId() uint32 {
 	return cluster.NodeId
+}
+
+func GetNode(nodeId uint32) api.Node {
+	for _, node := range cluster.NodeSet {
+		if node.NodeId == nodeId {
+			return node
+		}
+	}
+
+	return api.Node{}
 }
 
 func GetCluster() []api.Node {

@@ -8,20 +8,33 @@ import (
 )
 
 func Register() {
-	transport.RegisterServerStub("Update", Update)
+	transport.RegisterServerStub("AddMember", AddMember)
+	transport.RegisterServerStub("RemoveMember", RemoveMember)
+
 }
 
-func Update(data []byte) []byte {
+func AddMember(data []byte) []byte {
+	var node api.Node
 
-	//unmarshal args
-	var args []api.Node
-	err := json.Unmarshal(data, &args)
+	err := json.Unmarshal(data, &node)
 	if err != nil {
 		panic(err)
 	}
 
-	//call the routine
-	nodesetManager.Update(args)
+	nodesetManager.AddMember(node)
+
+	return nil
+}
+
+func RemoveMember(data []byte) []byte {
+	var nodeId uint32
+
+	err := json.Unmarshal(data, &nodeId)
+	if err != nil {
+		panic(err)
+	}
+
+	nodesetManager.RemoveMember(nodeId)
 
 	return nil
 }

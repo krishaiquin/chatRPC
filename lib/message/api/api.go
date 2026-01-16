@@ -1,6 +1,8 @@
 package api
 
+import "chatRPC/nodeset/api"
+
 type SendArgs struct {
-	From    uint32
+	From    api.Node
 	Message string
 }

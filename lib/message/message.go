@@ -1,9 +1,10 @@
 package message
 
 import (
+	"chatRPC/nodeset/api"
 	"fmt"
 )
 
-func Send(from uint32, message string) {
-	fmt.Printf("Node %d: %s", from, message)
+func Send(node api.Node, message string) {
+	fmt.Printf("%s: %s", node.UserName, message)
 }

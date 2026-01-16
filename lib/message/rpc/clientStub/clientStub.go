@@ -1,13 +1,14 @@
 package clientStub
 
 import (
-	"chatRPC/lib/message/api"
+	messageAPI "chatRPC/lib/message/api"
 	"chatRPC/lib/transport"
+	nodesetAPI "chatRPC/nodeset/api"
 	"encoding/json"
 )
 
-func Send(to string, from uint32, message string) string {
-	args := api.SendArgs{
+func Send(to string, from nodesetAPI.Node, message string) {
+	args := messageAPI.SendArgs{
 		From:    from,
 		Message: message,
 	}
@@ -17,14 +18,5 @@ func Send(to string, from uint32, message string) string {
 		panic(err)
 	}
 	//send it to server and get a response
-	msg := transport.Call(to, "Send", data)
-	var response string
-	//unmarshal
-	err = json.Unmarshal(msg, &response)
-	if err != nil {
-		panic(err)
-	}
-	//return
-	return response
-
+	transport.Call(to, "Send", data)
 }

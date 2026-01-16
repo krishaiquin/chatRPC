@@ -1,10 +1,17 @@
 package api
 
 type Node struct {
-	NodeId uint32
-	Addr   string
+	NodeId   uint32
+	UserName string
+	Addr     string
 }
 
-// type GetNodesReply struct {
-// 	NodesAddr []string
-// }
+type AddArgs struct {
+	Addr     string
+	Username string
+}
+
+type AddRet struct {
+	NodeId  uint32
+	NodeSet []Node
+}

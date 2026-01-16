@@ -59,13 +59,13 @@ func Call(to string, funcName string, args []byte) []byte {
 	//see which happens first: timeout or receiving the result
 	select {
 	case <-timeout:
-		dlog.Printf("Request has timed out! Exiting...")
+		panic("Request has timed out! Exiting...")
 	case res := <-pendingRequest[seqNum]:
 		dlog.Printf("Result for request#%d has been sent to the application\n", seqNum)
+		//remove that pending request
+		delete(pendingRequest, seqNum)
 		return res
 	}
-
-	return nil
 
 }
 

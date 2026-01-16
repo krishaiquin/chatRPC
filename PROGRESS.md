@@ -37,9 +37,15 @@
 ### Week 7
     🔁 Refactor Code
     🔁 Add better error handling
-    ✅ Learn and add context (graceful shutdown and cleanup)
-    🚧 Add chat messaging
-
+    ✅ Learn and add context (graceful shutdown on keyboard interrupt)
+    ✅ Add chat messaging
+    🚧 Fix chat messaging  
+### Week 8 
+    ✅ Fix chat messaging -- MVP now done
+    🚧  Work on improvements like add user names     
+    []  Add TUI
+    🔁  Add better error handling
+    🔁  Refactor Code
 
 ### 💭 Notes / Design Insights
     - Week 4:
@@ -75,6 +81,14 @@
         - In addition to that, I've put Listen() in goroutine so that services and nodes are able to send requests and receive results at the same time. 
         - In doing this, I am learning how to manage goroutines effectively, including working with channels, sync package, select statements.
         - I think this is a good point to clean up the code - refactor, add more error handling and finally introducing context in the project --> main goal for next week
+    - Week 7
+        - Spent most of week 7 remembering and understanding the code base, coming back from long hiatus
+        - Learnt context package -- specifically, withCancel()
+        - Started on chat messaging
+            - sending and receiving message between nodes are partially working -- sender crashes after sending message
+    - Week 8
+        - Found the bug on chat messaging -- clientStub of Send() was expecting a return value
+        - Upon reviewing the code, it looks like the error handling and the code itself are sufficient for what I intend for this project to be. For that reason, I've decided to defer error handling and code refactoring indefinitely. 
 <!-- #### Learning Goals
     - Implement RPC from scratch. Learn more about: 
         - client stub

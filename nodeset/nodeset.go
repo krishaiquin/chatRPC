@@ -1,26 +1,30 @@
 package nodeset
 
 import (
-	"chatRPC/dlog"
 	nodesetManager "chatRPC/lib/nodesetManager/rpc/clientStub"
 	"chatRPC/nodeset/api"
 	"slices"
 	"sync"
 )
 
-func Add(addr string) uint32 {
+func Add(addr string, username string) api.AddRet {
 	mx.Lock()
 	id := nextId
 	nextId += 1
-	cluster = append(cluster, api.Node{NodeId: id, Addr: addr})
+	node := api.Node{
+		NodeId:   id,
+		UserName: username,
+		Addr:     addr,
+	}
+	go requestAdd(node)
+	cluster = append(cluster, node)
+	nodeset := api.AddRet{
+		NodeId:  id,
+		NodeSet: cluster,
+	}
 	mx.Unlock()
-	//send ack to requester
 
-	//notify all nodes in cluster
-	//fmt.Printf("Nodeset server cluster: %v\n", cluster)
-	go notify()
-
-	return id
+	return nodeset
 }
 
 func Delete(nodeId uint32) {
@@ -32,17 +36,20 @@ func Delete(nodeId uint32) {
 			break
 		}
 	}
-	go notify()
 
+	go reqeuestDelete(nodeId)
 }
 
-func notify() {
-
-	for _, n := range cluster {
-		nodesetManager.Update(n.Addr, cluster)
-		dlog.Printf("node %d - %s updated!", n.NodeId, n.Addr)
+func requestAdd(node api.Node) {
+	for _, destinationNode := range cluster {
+		nodesetManager.AddMember(destinationNode.Addr, node)
 	}
+}
 
+func reqeuestDelete(nodeId uint32) {
+	for _, destinationNode := range cluster {
+		nodesetManager.RemoveMember(destinationNode.Addr, nodeId)
+	}
 }
 
 func init() {

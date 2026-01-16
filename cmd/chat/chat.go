@@ -14,17 +14,19 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 )
 
 func send(msg string) {
-	my_id := nodesetManager.GetId()
+	myId := nodesetManager.GetId()
+	me := nodesetManager.GetNode(myId)
 	for _, node := range nodesetManager.GetCluster() {
-		if node.NodeId == my_id {
+		if node.NodeId == myId {
 			continue
 		}
-		message.Send(node.Addr, my_id, msg)
+		message.Send(node.Addr, me, msg)
 	}
 }
 
@@ -69,9 +71,17 @@ func main() {
 	nodemanager.Register()
 	messenger.Register()
 
-	nodesetManager.CreateCluster()
+	fmt.Println("Welcome to the chat room!")
+	fmt.Printf("Please enter your name: ")
+	reader := bufio.NewReader(os.Stdin)
+	username, err := reader.ReadString('\n')
+	username = strings.TrimRight(username, "\r\n")
+	if err != nil {
+		panic(err)
+	}
 
-	fmt.Println("Welcome to chatRPC!")
+	dlog.Printf("My username is: %s\n", username)
+	nodesetManager.CreateCluster(username)
 
 	for {
 		reader := bufio.NewReader(os.Stdin)

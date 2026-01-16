@@ -3,6 +3,7 @@ package serverStub
 import (
 	"chatRPC/lib/transport"
 	"chatRPC/nodeset"
+	"chatRPC/nodeset/api"
 	"encoding/json"
 )
 
@@ -12,14 +13,14 @@ func Register() {
 }
 
 func Add(args []byte) []byte {
-	var addr string
-	err := json.Unmarshal(args, &addr)
+	var addArgs api.AddArgs
+	err := json.Unmarshal(args, &addArgs)
 	if err != nil {
 		panic(err)
 	}
 
 	//call the routine
-	nodeId := nodeset.Add(addr)
+	nodeId := nodeset.Add(addArgs.Addr, addArgs.Username)
 
 	//marshal the result
 	data, err := json.Marshal(nodeId)
