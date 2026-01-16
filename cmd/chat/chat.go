@@ -17,6 +17,8 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+
+	"github.com/rivo/tview"
 )
 
 func send(msg string) {
@@ -82,6 +84,32 @@ func main() {
 
 	dlog.Printf("My username is: %s\n", username)
 	nodesetManager.CreateCluster(username)
+
+	//TUI stuff
+	app := tview.NewApplication()
+
+	input := tview.NewInputField().
+		SetLabel("> ").
+		SetFieldWidth(0)
+
+	// Then wrap it in a bordered box if you want a border:
+	inputBox := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(input, 1, 0, true)
+
+	inputBox.SetBorder(true).
+		SetTitle("Type a message").
+		SetTitleAlign(tview.AlignLeft)
+
+	flex := tview.NewFlex().
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(tview.NewBox().SetBorder(true).SetTitle("Welcome to the chat room!").SetTitleAlign(tview.AlignLeft), 4, 0, false).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+				AddItem(tview.NewBox().SetBorder(true).SetTitle("Messages").SetTitleAlign(tview.AlignLeft), 0, 3, false).
+				AddItem(tview.NewBox().SetBorder(true).SetTitle("People").SetTitleAlign(tview.AlignLeft), 25, 0, false), 0, 4, false).
+			AddItem(inputBox, 7, 0, true), 0, 4, false)
+	if err := app.SetRoot(flex, true).SetFocus(input).Run(); err != nil {
+		panic(err)
+	}
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
