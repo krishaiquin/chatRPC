@@ -42,10 +42,10 @@
     🚧 Fix chat messaging  
 ### Week 8 
     ✅ Fix chat messaging -- MVP now done
-    🚧  Work on improvements like add user names     
-    []  Add TUI
-    🔁  Add better error handling
-    🔁  Refactor Code
+    ✅ Work on improvements like add user names     
+    🚧 Add TUI
+    🔁 Add better error handling
+    🔁 Refactor Code
 
 ### 💭 Notes / Design Insights
     - Week 4:
@@ -89,6 +89,7 @@
     - Week 8
         - Found the bug on chat messaging -- clientStub of Send() was expecting a return value
         - Upon reviewing the code, it looks like the error handling and the code itself are sufficient for what I intend for this project to be. For that reason, I've decided to defer error handling and code refactoring indefinitely. 
+        - Improved nodeset and nodesetManager. Before, when a node enters the cluster, nodeset will send the full cluster list to each node including the new node. Now, when a node enters the cluster, the nodeset gives the new node its nodeId and the cluster list. Nodeset then sends a request to the rest of cluster to add that new Node to their list.
 <!-- #### Learning Goals
     - Implement RPC from scratch. Learn more about: 
         - client stub
