@@ -9,6 +9,7 @@ import (
 	"chatRPC/lib/nodesetManager"
 	nodemanager "chatRPC/lib/nodesetManager/rpc/serverStub"
 	"chatRPC/lib/transport"
+	"chatRPC/nodeset/api"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
 	"context"
 	"fmt"
@@ -18,13 +19,14 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 func send(msg string) {
 	myId := nodesetManager.GetId()
 	me := nodesetManager.GetNode(myId)
-	for _, node := range nodesetManager.GetCluster() {
+	for _, node := range nodesetManager.GetNodeSet() {
 		if node.NodeId == myId {
 			continue
 		}
@@ -88,11 +90,32 @@ func main() {
 	//TUI stuff
 	app := tview.NewApplication()
 
+	//text Area
+	greetings := tview.NewTextView().
+		SetText(fmt.Sprintf("Welcome to the chat room, %s!", username))
+	greetings.SetBorder(true).SetTitle("chatRPC").SetTitleAlign(tview.AlignLeft)
+
+	people := tview.NewTextView()
+
+	for _, node := range nodesetManager.GetNodeSet() {
+		fmt.Fprintln(people, node.UserName)
+	}
+
+	nodesetManager.GetCluster().OnChange = func(nodes []api.Node) {
+		app.QueueUpdateDraw(func() {
+			people.Clear()
+			for _, node := range nodes {
+				fmt.Fprintln(people, node.UserName)
+			}
+		})
+	}
+
+	people.SetBorder(true).SetTitle("People").SetTitleAlign(tview.AlignLeft)
 	input := tview.NewInputField().
 		SetLabel("> ").
-		SetFieldWidth(0)
+		SetFieldWidth(0).
+		SetFieldBackgroundColor(tcell.ColorDefault)
 
-	// Then wrap it in a bordered box if you want a border:
 	inputBox := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(input, 1, 0, true)
 
@@ -100,13 +123,13 @@ func main() {
 		SetTitle("Type a message").
 		SetTitleAlign(tview.AlignLeft)
 
-	flex := tview.NewFlex().
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(tview.NewBox().SetBorder(true).SetTitle("Welcome to the chat room!").SetTitleAlign(tview.AlignLeft), 4, 0, false).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-				AddItem(tview.NewBox().SetBorder(true).SetTitle("Messages").SetTitleAlign(tview.AlignLeft), 0, 3, false).
-				AddItem(tview.NewBox().SetBorder(true).SetTitle("People").SetTitleAlign(tview.AlignLeft), 25, 0, false), 0, 4, false).
-			AddItem(inputBox, 7, 0, true), 0, 4, false)
+	flex := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(greetings, 3, 0, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(tview.NewBox().SetBorder(true).SetTitle("Messages").SetTitleAlign(tview.AlignLeft), 0, 3, false).
+			AddItem(people, 25, 0, false), 0, 4, false).
+		AddItem(inputBox, 7, 0, true)
+
 	if err := app.SetRoot(flex, true).SetFocus(input).Run(); err != nil {
 		panic(err)
 	}

@@ -91,6 +91,10 @@
         - Upon reviewing the code, it looks like the error handling and the code itself are sufficient for what I intend for this project to be. For that reason, I've decided to defer error handling and code refactoring indefinitely. 
         - Improved nodeset and nodesetManager. Before, when a node enters the cluster, nodeset will send the full cluster list to each node including the new node. Now, when a node enters the cluster, the nodeset gives the new node its nodeId and the cluster list. Nodeset then sends a request to the rest of cluster to add that new Node to their list.
         - Used tview to create TUI of the chat. Added few elements, no functionalities yet
+    - Week 9
+        - Added Greetings at the top of the screen
+        - Added list of people that has entered the chat room
+            - Updates the People list everytime someone enters the chat room
 <!-- #### Learning Goals
     - Implement RPC from scratch. Learn more about: 
         - client stub

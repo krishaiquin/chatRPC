@@ -1,6 +1,7 @@
 package nodesetManager
 
 import (
+	"chatRPC/dlog"
 	"chatRPC/lib/transport"
 	"chatRPC/nodeset/api"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
@@ -9,14 +10,16 @@ import (
 )
 
 type Cluster struct {
-	NodeId  uint32 //this node's id
-	NodeSet []api.Node
-	mx      sync.Mutex
+	NodeId   uint32 //this node's id
+	NodeSet  []api.Node
+	OnChange func([]api.Node)
+	mx       sync.Mutex
 }
 
 func CreateCluster(username string) {
 	cluster.mx.Lock()
 	cluster.NodeId, cluster.NodeSet = nodeset.Add(transport.GetAddress(), username)
+	dlog.Printf("nodeId: %d\n", cluster.NodeId)
 	cluster.mx.Unlock()
 }
 
@@ -24,6 +27,10 @@ func AddMember(node api.Node) {
 	cluster.mx.Lock()
 	cluster.NodeSet = append(cluster.NodeSet, node)
 	cluster.mx.Unlock()
+
+	if cluster.OnChange != nil {
+		cluster.OnChange(cluster.NodeSet)
+	}
 }
 
 func RemoveMember(nodeId uint32) {
@@ -51,8 +58,12 @@ func GetNode(nodeId uint32) api.Node {
 	return api.Node{}
 }
 
-func GetCluster() []api.Node {
+func GetNodeSet() []api.Node {
 	return cluster.NodeSet
+}
+
+func GetCluster() *Cluster {
+	return cluster
 }
 
 func init() {

@@ -42,6 +42,9 @@ func Delete(nodeId uint32) {
 
 func requestAdd(node api.Node) {
 	for _, destinationNode := range cluster {
+		if destinationNode.NodeId == node.NodeId {
+			continue
+		}
 		nodesetManager.AddMember(destinationNode.Addr, node)
 	}
 }
