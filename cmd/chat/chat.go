@@ -4,12 +4,12 @@ import (
 	"bufio"
 	db "chatRPC/db/rpc/clientStub"
 	"chatRPC/dlog"
+	myMessage "chatRPC/lib/message"
 	message "chatRPC/lib/message/rpc/clientStub"
 	messenger "chatRPC/lib/message/rpc/serverStub"
 	"chatRPC/lib/nodesetManager"
 	nodemanager "chatRPC/lib/nodesetManager/rpc/serverStub"
 	"chatRPC/lib/transport"
-	"chatRPC/nodeset/api"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
 	"context"
 	"fmt"
@@ -70,7 +70,7 @@ func main() {
 		transport.Listen()
 	}()
 	nodeset.Bind(db.Get("nodeset"))
-	//message.Bind(db.Get("message"))
+
 	//chatd stuff
 	nodemanager.Register()
 	messenger.Register()
@@ -96,23 +96,53 @@ func main() {
 	greetings.SetBorder(true).SetTitle("chatRPC").SetTitleAlign(tview.AlignLeft)
 
 	people := tview.NewTextView()
-
+	messages := tview.NewTextView()
 	for _, node := range nodesetManager.GetNodeSet() {
 		fmt.Fprintln(people, node.UserName)
 	}
 
-	nodesetManager.GetCluster().OnChange = func(nodes []api.Node) {
+	nodesetManager.GetCluster().OnChange = func(diff *nodesetManager.DiffCluster) {
 		app.QueueUpdateDraw(func() {
-			people.Clear()
-			for _, node := range nodes {
+			for _, node := range diff.AddedNodes {
 				fmt.Fprintln(people, node.UserName)
+				fmt.Fprintf(messages, "%s has entered the chat!\n", node.UserName)
 			}
+
+			if len(diff.RemovedNodes) > 0 {
+				people.Clear()
+				for _, node := range nodesetManager.GetCluster().NodeSet {
+					fmt.Fprintln(people, node.UserName)
+				}
+				for _, node := range diff.RemovedNodes {
+					fmt.Fprintf(messages, "%s has left the chat!\n", node.UserName)
+				}
+			}
+
+			diff.AddedNodes = diff.AddedNodes[:0]
+			diff.RemovedNodes = diff.RemovedNodes[:0]
+		})
+	}
+
+	myMessage.GetMessage().OnChange = func(msg *myMessage.Msg) {
+		app.QueueUpdateDraw(func() {
+			fmt.Fprintf(messages, "%s: %s\n", msg.From.UserName, msg.Message)
 		})
 	}
 
 	people.SetBorder(true).SetTitle("People").SetTitleAlign(tview.AlignLeft)
-	input := tview.NewInputField().
-		SetLabel("> ").
+	messages.SetBorder(true).SetTitle("Messages").SetTitleAlign(tview.AlignLeft)
+	input := tview.NewInputField()
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			me := nodesetManager.GetNode(nodesetManager.GetId())
+			fmt.Fprintf(messages, "%s: %s\n", me.UserName, input.GetText())
+			send(input.GetText())
+			input.SetText("")
+		}
+	})
+
+	input.SetLabel("> ").
 		SetFieldWidth(0).
 		SetFieldBackgroundColor(tcell.ColorDefault)
 
@@ -123,33 +153,27 @@ func main() {
 		SetTitle("Type a message").
 		SetTitleAlign(tview.AlignLeft)
 
+	footer := tview.NewTextView().
+		SetDynamicColors(true).
+		SetTextAlign(tview.AlignCenter).
+		SetText("[yellow]Ctrl+C[white] Exit   [yellow]Enter[white] Send message")
+
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(greetings, 3, 0, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(tview.NewBox().SetBorder(true).SetTitle("Messages").SetTitleAlign(tview.AlignLeft), 0, 3, false).
+			AddItem(messages, 0, 3, false).
 			AddItem(people, 25, 0, false), 0, 4, false).
-		AddItem(inputBox, 7, 0, true)
+		AddItem(inputBox, 7, 0, true).
+		AddItem(footer, 1, 0, false)
 
 	if err := app.SetRoot(flex, true).SetFocus(input).Run(); err != nil {
 		panic(err)
 	}
 
-	for {
-		reader := bufio.NewReader(os.Stdin)
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
-		if line == "quit\n" || line == "q\n" {
-			nodeset.Delete(nodesetManager.GetId())
-			cancel()
-			fmt.Printf("Bye!\n")
-			os.Exit(1)
-		}
-		dlog.Printf("Sending line: %s\n", line)
-		send(line)
+	nodeset.Delete(nodesetManager.GetId())
+	cancel()
+	os.Exit(1)
 
-	}
 }
 
 var wg sync.WaitGroup

@@ -1,7 +1,6 @@
 package nodesetManager
 
 import (
-	"chatRPC/dlog"
 	"chatRPC/lib/transport"
 	"chatRPC/nodeset/api"
 	nodeset "chatRPC/nodeset/rpc/clientStub"
@@ -12,24 +11,29 @@ import (
 type Cluster struct {
 	NodeId   uint32 //this node's id
 	NodeSet  []api.Node
-	OnChange func([]api.Node)
+	OnChange func(*DiffCluster)
 	mx       sync.Mutex
+}
+
+type DiffCluster struct {
+	AddedNodes   []api.Node
+	RemovedNodes []api.Node
 }
 
 func CreateCluster(username string) {
 	cluster.mx.Lock()
 	cluster.NodeId, cluster.NodeSet = nodeset.Add(transport.GetAddress(), username)
-	dlog.Printf("nodeId: %d\n", cluster.NodeId)
 	cluster.mx.Unlock()
 }
 
 func AddMember(node api.Node) {
 	cluster.mx.Lock()
 	cluster.NodeSet = append(cluster.NodeSet, node)
+	diff.AddedNodes = append(diff.AddedNodes, node)
 	cluster.mx.Unlock()
 
 	if cluster.OnChange != nil {
-		cluster.OnChange(cluster.NodeSet)
+		cluster.OnChange(diff)
 	}
 }
 
@@ -38,7 +42,13 @@ func RemoveMember(nodeId uint32) {
 		if nodeId == n.NodeId {
 			cluster.mx.Lock()
 			cluster.NodeSet = slices.Delete(cluster.NodeSet, index, index+1)
+			diff.RemovedNodes = append(diff.RemovedNodes, n)
 			cluster.mx.Unlock()
+
+			if cluster.OnChange != nil {
+				cluster.OnChange(diff)
+			}
+
 			break
 		}
 	}
@@ -68,7 +78,8 @@ func GetCluster() *Cluster {
 
 func init() {
 	cluster = &Cluster{}
-
+	diff = &DiffCluster{}
 }
 
 var cluster *Cluster
+var diff *DiffCluster

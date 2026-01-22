@@ -2,9 +2,34 @@ package message
 
 import (
 	"chatRPC/nodeset/api"
-	"fmt"
+	"sync"
 )
 
-func Send(node api.Node, message string) {
-	fmt.Printf("%s: %s", node.UserName, message)
+type Msg struct {
+	From     api.Node
+	Message  string
+	mx       sync.Mutex
+	OnChange func(*Msg)
 }
+
+func Send(node api.Node, msg string) {
+	message.mx.Lock()
+	message.From = node
+	message.Message = msg
+	message.mx.Unlock()
+
+	if message.OnChange != nil {
+		message.OnChange(message)
+	}
+
+}
+
+func GetMessage() *Msg {
+	return message
+}
+
+func init() {
+	message = &Msg{}
+}
+
+var message *Msg
