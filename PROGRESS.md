@@ -46,6 +46,8 @@
     🚧 Add TUI
     🔁 Add better error handling
     🔁 Refactor Code
+### Week 9
+    ✅ Add TUI
 
 ### 💭 Notes / Design Insights
     - Week 4:
@@ -95,6 +97,8 @@
         - Added Greetings at the top of the screen
         - Added list of people that has entered the chat room
             - Updates the People list everytime someone enters the chat room
+        - Update TUI when user enters/leaves the chat room
+        - Update TUI when user receives/sends a chat message
 <!-- #### Learning Goals
     - Implement RPC from scratch. Learn more about: 
         - client stub
