@@ -16,7 +16,6 @@ func main() {
 		transport.Listen()
 	}()
 
-	//wait until goroutine is done
 	wg.Wait()
 }
 

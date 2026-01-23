@@ -12,11 +12,11 @@ func Send(to string, from nodesetAPI.Node, message string) {
 		From:    from,
 		Message: message,
 	}
-	//marshal
+
 	data, err := json.Marshal(args)
 	if err != nil {
 		panic(err)
 	}
-	//send it to server and get a response
+
 	transport.Call(to, "Send", data)
 }

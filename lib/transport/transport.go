@@ -13,14 +13,14 @@ import (
 
 // call to request
 func Call(to string, funcName string, args []byte) []byte {
-	//create UDP endpoint from string address
+
 	toAddr, err := net.ResolveUDPAddr("udp", to)
 	if err != nil {
 		panic(err)
 	}
 
 	buf := bytes.NewBuffer(make([]byte, 0))
-	//write to buffer
+
 	seqNum := seq.Add(1)
 	pendingRequest[seqNum] = make(chan []byte, 1)
 	if err = binary.Write(buf, binary.NativeEndian, seqNum); err != nil {
@@ -49,40 +49,34 @@ func Call(to string, funcName string, args []byte) []byte {
 		panic(fmt.Errorf("truncated send. Sent: %d, original: %d", n, len(args)))
 	}
 
-	//start the timeout timer
 	timeout := make(chan bool)
 	go func() {
 		time.Sleep(responseTimeout)
 		timeout <- true
 	}()
 
-	//see which happens first: timeout or receiving the result
 	select {
 	case <-timeout:
 		panic("Request has timed out! Exiting...")
 	case res := <-pendingRequest[seqNum]:
 		dlog.Printf("Result for request#%d has been sent to the application\n", seqNum)
-		//remove that pending request
 		delete(pendingRequest, seqNum)
 		return res
 	}
 
 }
 
-// listen for request
 func Listen() {
 
 	for {
-		//make buffer for requests
 		res := make([]byte, 2048)
 		n, from, err := conn.ReadFromUDP(res)
 		if err != nil {
 			panic(err)
 		}
 		res = res[:n]
-		//put request to buf
 		buf := bytes.NewBuffer(res)
-		//extract data from buf
+
 		var seqNum uint32
 		var packetType byte
 		if err = binary.Read(buf, binary.NativeEndian, &seqNum); err != nil {
@@ -110,7 +104,6 @@ func Listen() {
 			//dispatch
 			response := serverStub(buf.Bytes())
 
-			//make buffer
 			buffer := bytes.NewBuffer(make([]byte, 0))
 			if err = binary.Write(buffer, binary.NativeEndian, seqNum); err != nil {
 				panic(err)
@@ -122,7 +115,7 @@ func Listen() {
 				panic(err)
 			}
 			dlog.Printf("Sending response to [%s] - %s", from.String(), response)
-			//write the response to the connection
+
 			_, err = conn.WriteToUDP(buffer.Bytes(), from)
 			if err != nil {
 				panic(err)
