@@ -59,10 +59,10 @@ func main() {
 		case <-ctx.Done():
 		}
 	}()
-	//add this node to the nodeset
+
 	dlog.Printf("My address is %s\n", transport.GetAddress())
 
-	//bind chat to all the services endpoints
+	//Bind chat to all the services endpoints
 	db.Bind(os.Args[1])
 	wg.Add(1)
 	go func() {
@@ -71,32 +71,40 @@ func main() {
 	}()
 	nodeset.Bind(db.Get("nodeset"))
 
-	//chatd stuff
+	//Register Chat Services
 	nodemanager.Register()
 	messenger.Register()
 
-	fmt.Println("Welcome to the chat room!")
-	fmt.Printf("Please enter your name: ")
-	reader := bufio.NewReader(os.Stdin)
-	username, err := reader.ReadString('\n')
-	username = strings.TrimRight(username, "\r\n")
-	if err != nil {
-		panic(err)
+	fmt.Println("Welcome to chatRPC!")
+	var username string
+	for {
+		fmt.Printf("Please enter your name: ")
+		reader := bufio.NewReader(os.Stdin)
+		name, err := reader.ReadString('\n')
+		username = strings.TrimRight(name, "\r\n")
+		if err != nil {
+			panic(err)
+		}
+
+		if username != "" {
+			break
+		}
 	}
 
 	dlog.Printf("My username is: %s\n", username)
 	nodesetManager.CreateCluster(username)
 
-	//TUI stuff
+	//Render TUI
 	app := tview.NewApplication()
 
-	//text Area
 	greetings := tview.NewTextView().
 		SetText(fmt.Sprintf("Welcome to the chat room, %s!", username))
-	greetings.SetBorder(true).SetTitle("chatRPC").SetTitleAlign(tview.AlignLeft)
+	greetings.SetBorder(true).
+		SetTitle("chatRPC").
+		SetTitleAlign(tview.AlignLeft)
 
 	people := tview.NewTextView()
-	messages := tview.NewTextView()
+	messages := tview.NewTextView().SetDynamicColors(true)
 	for _, node := range nodesetManager.GetNodeSet() {
 		fmt.Fprintln(people, node.UserName)
 	}
@@ -105,7 +113,7 @@ func main() {
 		app.QueueUpdateDraw(func() {
 			for _, node := range diff.AddedNodes {
 				fmt.Fprintln(people, node.UserName)
-				fmt.Fprintf(messages, "%s has entered the chat!\n", node.UserName)
+				fmt.Fprintf(messages, "[green::i]%s has entered the chat![-::-]\n", node.UserName)
 			}
 
 			if len(diff.RemovedNodes) > 0 {
@@ -114,7 +122,7 @@ func main() {
 					fmt.Fprintln(people, node.UserName)
 				}
 				for _, node := range diff.RemovedNodes {
-					fmt.Fprintf(messages, "%s has left the chat!\n", node.UserName)
+					fmt.Fprintf(messages, "[red::i]%s has left the chat![-::-]\n", node.UserName)
 				}
 			}
 
@@ -129,13 +137,20 @@ func main() {
 		})
 	}
 
-	people.SetBorder(true).SetTitle("People").SetTitleAlign(tview.AlignLeft)
-	messages.SetBorder(true).SetTitle("Messages").SetTitleAlign(tview.AlignLeft)
+	people.SetBorder(true).
+		SetTitle("People").
+		SetTitleAlign(tview.AlignLeft)
+	messages.SetBorder(true).
+		SetTitle("Messages").
+		SetTitleAlign(tview.AlignLeft)
 	input := tview.NewInputField()
 
 	input.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEnter {
 			me := nodesetManager.GetNode(nodesetManager.GetId())
+			if input.GetText() == "" {
+				return
+			}
 			fmt.Fprintf(messages, "%s: %s\n", me.UserName, input.GetText())
 			send(input.GetText())
 			input.SetText("")
@@ -156,7 +171,7 @@ func main() {
 	footer := tview.NewTextView().
 		SetDynamicColors(true).
 		SetTextAlign(tview.AlignCenter).
-		SetText("[yellow]Ctrl+C[white] Exit   [yellow]Enter[white] Send message")
+		SetText("[yellow]Tab:[white]Type ↔ Scroll   [yellow]J/K:[white]Scroll down/up   [yellow]Ctrl+C:[white]Exit   [yellow]Enter:[white]Send message")
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(greetings, 3, 0, false).
@@ -166,7 +181,24 @@ func main() {
 		AddItem(inputBox, 7, 0, true).
 		AddItem(footer, 1, 0, false)
 
-	if err := app.SetRoot(flex, true).SetFocus(input).Run(); err != nil {
+	app.SetRoot(flex, true).SetFocus(input)
+
+	focusOnInput := true
+	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTab {
+			if focusOnInput {
+				app.SetFocus(messages)
+			} else {
+				app.SetFocus(input)
+			}
+			focusOnInput = !focusOnInput
+			return nil
+		}
+
+		return event
+	})
+
+	if err := app.Run(); err != nil {
 		panic(err)
 	}
 
