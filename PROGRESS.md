@@ -99,6 +99,8 @@
             - Updates the People list everytime someone enters the chat room
         - Update TUI when user enters/leaves the chat room
         - Update TUI when user receives/sends a chat message
+        - Add styles to TUI.
+        - Goals for next week: create docker, write up README, ship chatRPC 🎉
 <!-- #### Learning Goals
     - Implement RPC from scratch. Learn more about: 
         - client stub
