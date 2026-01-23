@@ -105,6 +105,11 @@ func main() {
 
 	people := tview.NewTextView()
 	messages := tview.NewTextView().SetDynamicColors(true)
+	messages.SetChangedFunc(func() {
+		app.QueueUpdateDraw(func() {
+			messages.ScrollToEnd()
+		})
+	})
 	for _, node := range nodesetManager.GetNodeSet() {
 		fmt.Fprintln(people, node.UserName)
 	}
