@@ -9,6 +9,9 @@ import (
 	"sync"
 )
 
+/**
+*	Runs Nodeset server
+ */
 func main() {
 	if len(os.Args) != 2 {
 		panic(fmt.Errorf("usage %s <DB_Server_Addr>", os.Args[0]))

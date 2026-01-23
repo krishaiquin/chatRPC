@@ -7,6 +7,9 @@ import (
 	"sync"
 )
 
+/**
+*	Runs DB server
+ */
 func main() {
 	serverStub.Register()
 	fmt.Printf("Listening on: %s\n", transport.GetAddress())

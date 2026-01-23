@@ -1,5 +1,13 @@
 package dlog
 
+/**
+*	Debug log
+*
+*	Prints debug logs when debug is enable.
+*	Exmaple: DEBUG="1" go run chat.go <dbEndpoit>
+*
+ */
+
 import (
 	"log"
 	"os"
