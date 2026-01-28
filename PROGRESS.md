@@ -48,7 +48,10 @@
     🔁 Refactor Code
 ### Week 9
     ✅ Add TUI
-
+### Week 10
+    ✅ Remove db service as it is no longer needed
+    ✅ Write README
+    ✅ Ship! 🎉
 ### 💭 Notes / Design Insights
     - Week 4:
         - Rewriting Node Discovery Implementation Ideas:
@@ -99,16 +102,18 @@
             - Updates the People list everytime someone enters the chat room
         - Update TUI when user enters/leaves the chat room
         - Update TUI when user receives/sends a chat message
-        - Add styles to TUI.
-        - Goals for next week: create docker, write up README, ship chatRPC 🎉
-<!-- #### Learning Goals
-    - Implement RPC from scratch. Learn more about: 
-        - client stub
-        - server stub
-        - RPC mechanism
-    - Broadcast message to client node cluster. Learn more about:
-        - transport protocol
-    - Add context to the application. Learn more about:
-        - Contexts
-    - Add vector clocks. Learn more about:
-        - causal events -->
+        - Add styles to TUI
+        - Goals for next week: create docker, write up README, ship chatRPC 🎉 
+    - Week 10
+        - Initialy, I was expecting to create multiple services for chat, so I created a db to store these endpoints but it looks like it is no longer needed
+        - let's see if docker is needed. At the moment, it seems that once the repo has been cloned, everything should work
+<!-- #### Learning Goals - Implement RPC from scratch. Learn more about: 
+    - client stub
+    - server stub
+    - RPC mechanism
+- Broadcast message to client node cluster. Learn more about:
+    - transport protocol
+- Add context to the application. Learn more about:
+    - Contexts
+- Add vector clocks. Learn more about:
+    - causal events -->

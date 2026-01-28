@@ -1,11 +1,9 @@
 package main
 
 import (
-	db "chatRPC/db/rpc/clientStub"
 	"chatRPC/lib/transport"
 	"chatRPC/nodeset/rpc/serverStub"
 	"fmt"
-	"os"
 	"sync"
 )
 
@@ -13,11 +11,6 @@ import (
 *	Runs Nodeset server
  */
 func main() {
-	if len(os.Args) != 2 {
-		panic(fmt.Errorf("usage %s <DB_Server_Addr>", os.Args[0]))
-	}
-
-	db.Bind(os.Args[1])
 	serverStub.Register()
 	fmt.Printf("Listening on: %s\n", transport.GetAddress())
 	wg.Add(1)
@@ -25,7 +18,6 @@ func main() {
 		defer wg.Done()
 		transport.Listen()
 	}()
-	db.Put("nodeset", transport.GetAddress())
 
 	wg.Wait()
 }

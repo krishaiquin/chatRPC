@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	db "chatRPC/db/rpc/clientStub"
 	"chatRPC/dlog"
 	myMessage "chatRPC/lib/message"
 	message "chatRPC/lib/message/rpc/clientStub"
@@ -37,7 +36,7 @@ func send(msg string) {
 func main() {
 
 	if len(os.Args) != 2 {
-		panic(fmt.Errorf("usage %s <DBServerAddr>", os.Args[0]))
+		panic(fmt.Errorf("usage %s <NodeSetServerAddr>", os.Args[0]))
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -62,14 +61,12 @@ func main() {
 
 	dlog.Printf("My address is %s\n", transport.GetAddress())
 
-	//Bind chat to all the services endpoints
-	db.Bind(os.Args[1])
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		transport.Listen()
 	}()
-	nodeset.Bind(db.Get("nodeset"))
+	nodeset.Bind(os.Args[1])
 
 	//Register Chat Services
 	nodemanager.Register()

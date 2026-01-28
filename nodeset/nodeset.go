@@ -16,7 +16,6 @@ func Add(addr string, username string) api.AddRet {
 		UserName: username,
 		Addr:     addr,
 	}
-	go requestAdd(node)
 	cluster = append(cluster, node)
 	nodeset := api.AddRet{
 		NodeId:  id,
@@ -24,6 +23,7 @@ func Add(addr string, username string) api.AddRet {
 	}
 	mx.Unlock()
 
+	go requestAdd(node)
 	return nodeset
 }
 
